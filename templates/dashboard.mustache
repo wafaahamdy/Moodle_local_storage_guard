@@ -1,0 +1,39 @@
+<div class="local_storage_guard_dashboard">
+    <div class="alert {{#has_locked}}alert-danger{{/has_locked}}{{^has_locked}}alert-success{{/has_locked}} mb-4">
+        <strong>Summary:</strong> Total Tracked: {{total_courses}} | Locked: <span class="badge badge-pill badge-dark">{{total_locked}}</span>
+    </div>
+
+    <div class="d-flex justify-content-between mb-4">
+        <a href="{{scanurl}}" class="btn btn-primary">Run Storage Scan Now</a>
+        <a href="{{exporturl}}" class="btn btn-success">Download CSV Export</a>
+    </div>
+
+    <form method="get" action="{{formurl}}" class="form-inline mb-4 p-3 bg-light border rounded">
+        {{{categoryselect}}}
+        {{{statusselect}}}
+        <button type="submit" class="btn btn-secondary ml-2">Apply Filters</button>
+    </form>
+
+    <table class="generaltable mt-3 w-100">
+        <thead>
+            <tr>
+                <th>Course Name</th>
+                <th>Category</th>
+                <th>Quota</th>
+                <th>Status</th>
+                <th>Last Checked</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#courses}}
+            <tr>
+                <td><a href="{{url}}">{{name}}</a></td>
+                <td>{{categoryname}}</td>
+                <td>{{quota}}</td>
+                <td><span class="badge {{statusclass}}">{{statuslabel}}</span></td>
+                <td>{{time}}</td>
+            </tr>
+            {{/courses}}
+        </tbody>
+    </table>
+</div>

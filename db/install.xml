@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/storage_guard/db" VERSION="20260125" COMMENT="XMLDB file for Storage Guard"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_storage_guard" COMMENT="Tracks course storage status and notifications.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Unique record ID."/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to course ID."/>
+        <FIELD NAME="is_locked" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 if course is locked."/>
+        <FIELD NAME="last_notified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Last notification timestamp."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key."/>
+        <KEY NAME="courseid_idx" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id" COMMENT="Course foreign key."/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
