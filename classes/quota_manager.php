@@ -76,10 +76,9 @@ class quota_manager {
         global $CFG, $DB;
 
         // Path to the Course Size report library.
+        /* Ignore course size report
         $libfile = $CFG->dirroot . '/report/coursesize/lib.php';
-        
-        
-        
+              
         if (file_exists($libfile)) {
             require_once($libfile);
             
@@ -87,7 +86,7 @@ class quota_manager {
             $bytes = report_coursesize_get_course_size($courseid);
             
             return round(($bytes ?: 0) / 1048576, 2);
-        }
+        }*/
 
         // Fallback: Manual calculation if report_coursesize is missing.
         $context = \context_course::instance($courseid);
@@ -101,6 +100,7 @@ class quota_manager {
           AND f.filearea  != 'recyclebin'
           AND f.filearea  != 'trashcan' -- Ignore the 4-day safety trash area
           AND f.filearea  != 'draft'"; // Ignore files currently being uploaded (Drafts)
+         
         $bytes = $DB->get_field_sql($sql, [
             'contextid' => $context->id,
             'path'      => $context->path . '/%'

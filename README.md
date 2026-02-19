@@ -25,7 +25,7 @@ When you **copy a course** in Moodle, the system does NOT physically duplicate a
 
 ### Solution: Clean up orphaned files
 
-This plugin includes an automatic scheduled task that runs daily at 2 AM to clean up orphaned files. Alternatively, you can manually run:
+This plugin includes an automatic scheduled task to clean up orphaned files. Alternatively, you can manually run:
 
 ```bash
 php admin/cli/maintenance.php --purgefiles

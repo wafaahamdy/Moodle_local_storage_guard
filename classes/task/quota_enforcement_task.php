@@ -46,7 +46,10 @@ class quota_enforcement_task extends \core\task\scheduled_task {
         mtrace("Starting Storage Guard maintenance task...");
         
         // First, clean up orphaned files from storage.
-        $this->cleanup_orphaned_files();
+       // Remove $this->cleanup_orphaned_files();
+
+       // Clear course-related caches before calculation to ensure we see the latest DB state.
+    \cache_helper::purge_by_event('changesincourse');
 
         $manager = new \local_storage_guard\quota_manager();
         $lock_size_bytes = 1048576; // 1MB Hard limit.
