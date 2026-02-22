@@ -75,20 +75,7 @@ class quota_manager {
     public function get_course_usage_mb($courseid) {
         global $CFG, $DB;
 
-        // Path to the Course Size report library.
-        /* Ignore course size report
-        $libfile = $CFG->dirroot . '/report/coursesize/lib.php';
-              
-        if (file_exists($libfile)) {
-            require_once($libfile);
-            
-            // This function calculates size across all course contexts.
-            $bytes = report_coursesize_get_course_size($courseid);
-            
-            return round(($bytes ?: 0) / 1048576, 2);
-        }*/
-
-        // Fallback: Manual calculation if report_coursesize is missing.
+        //   Manual calculation if report_coursesize is missing.
         $context = \context_course::instance($courseid);
         $sql = "SELECT SUM(f.filesize)
           FROM {files} f

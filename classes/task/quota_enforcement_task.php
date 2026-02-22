@@ -45,12 +45,6 @@ class quota_enforcement_task extends \core\task\scheduled_task {
 
         mtrace("Starting Storage Guard maintenance task...");
         
-        // First, clean up orphaned files from storage.
-       // Remove $this->cleanup_orphaned_files();
-
-       // Clear course-related caches before calculation to ensure we see the latest DB state.
-    \cache_helper::purge_by_event('changesincourse');
-
         $manager = new \local_storage_guard\quota_manager();
         $lock_size_bytes = 1048576; // 1MB Hard limit.
         
@@ -119,86 +113,7 @@ class quota_enforcement_task extends \core\task\scheduled_task {
         mtrace("Storage Guard maintenance task completed.");
     }
 
-    /**
-     * Cleans up orphaned files from storage.
-     * Removes files with no database references.
-     */
-    private function cleanup_orphaned_files(): void {
-        global $DB, $CFG;
-        
-        mtrace("Starting file cleanup...");
-        
-        // Get all valid content hashes from database (SHA1 hashes, 40 chars)
-        $sql = "SELECT DISTINCT contenthash FROM {files} WHERE contenthash IS NOT NULL AND contenthash != ''";
-        $records = $DB->get_records_sql($sql);
-        $validhashes = [];
-        foreach ($records as $record) {
-            $validhashes[$record->contenthash] = true;
-        }
-        
-        if (empty($validhashes)) {
-            mtrace("No files in database. Skipping cleanup.");
-            return;
-        }
-        
-        // Check file storage pool directory for orphaned files
-        $filedir = $CFG->dataroot . '/filedir';
-        if (!is_dir($filedir)) {
-            mtrace("File pool directory not found at: {$filedir}");
-            return;
-        }
-        
-        $count = 0;
-        $cleaned = 0;
-        
-        // Scan the file pool directory structure: filedir/xx/yy/[hash file]
-        // The first 2 chars are the first hex pair, next 2 are the second pair
-        // The filename is the rest of the SHA1 hash (remaining 36 chars)
-        for ($i = 0; $i < 256; $i++) {
-            $leveldir = $filedir . '/' . sprintf('%02x', $i);
-            
-            if (!is_dir($leveldir)) {
-                continue;
-            }
-            
-            for ($j = 0; $j < 256; $j++) {
-                $subdir = $leveldir . '/' . sprintf('%02x', $j);
-                
-                if (!is_dir($subdir)) {
-                    continue;
-                }
-                
-                $files = @scandir($subdir);
-                if ($files === false) {
-                    continue;
-                }
-                
-                foreach ($files as $file) {
-                    // Skip . and .. and directories
-                    if ($file === '.' || $file === '..' || is_dir($subdir . '/' . $file)) {
-                        continue;
-                    }
-                    
-                    // Reconstruct the full SHA1 hash: first 2 hex + next 2 hex + filename
-                    $fullhash = sprintf('%02x%02x', $i, $j) . $file;
-                    $count++;
-                    
-                    // If this hash is NOT in our valid set, it's orphaned
-                    if (!isset($validhashes[$fullhash])) {
-                        $filepath = $subdir . '/' . $file;
-                        if (@unlink($filepath)) {
-                            $cleaned++;
-                            mtrace("Removed orphaned file: {$fullhash}");
-                        } else {
-                            mtrace("Could not remove orphaned file: {$fullhash}");
-                        }
-                    }
-                }
-            }
-        }
-        
-        mtrace("File cleanup completed. Scanned: {$count} files, Removed: {$cleaned} orphaned files.");
-    }
+
 
     /**
      * Forces the course maxbytes setting to 1MB to stop new uploads.

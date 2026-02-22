@@ -15,23 +15,18 @@ Storage Guard is a Moodle plugin that manages course storage quotas and enforces
 
 When you **copy a course** in Moodle, the system does NOT physically duplicate all files on disk. Instead, it creates **database references** to the same files. This is by design for efficiency.
 
-### Why storage size remains the same after deleting course content:
+### Notes regarding course size calculation
 
 1. When copying Course 1 → Course 2, files are NOT duplicated on disk
 2. Moodle creates new database entries (`{files}` table) pointing to the same physical files
 3. When you delete content from Course 2, only the database records are removed
-4. The physical files remain on disk (they may still be referenced by Course 1 or are orphaned)
+4. The physical files remain on disk (they may still be referenced by Course 1)
 5. Storage Guard correctly reports the usage based on database records, not physical files
 
-### Solution: Clean up orphaned files
+### Recycle bin and course size calculations
+When item is deleted from course and the recycle bin is active, the deleted file keeps appearing in course size 
+until recycle bin cleanup task run
 
-This plugin includes an automatic scheduled task to clean up orphaned files. Alternatively, you can manually run:
-
-```bash
-php admin/cli/maintenance.php --purgefiles
-```
-
-This safely removes files with no database references while preserving files still in use.
 
 ## Installing via uploaded ZIP file ##
 
