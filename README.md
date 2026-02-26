@@ -5,6 +5,7 @@ Storage Guard is a Moodle plugin that manages course storage quotas and enforces
 ## Features
 
 - **Course-level quota management**: Set storage limits per course or use site-wide defaults
+- **Configurable Recycle Bin Logic**: toggle whether items in the Recycle Bin count toward the course quota.
 - **Automatic quota enforcement**: Locks courses to 1MB upload limit when quota is exceeded
 - **Warning notifications**: Alerts teachers when storage usage reaches 80% of quota
 - **Restriction notifications**: Alerts when storage is restricted due to quota exceeded
@@ -14,19 +15,17 @@ Storage Guard is a Moodle plugin that manages course storage quotas and enforces
 ## Important: Understanding File Storage in Moodle
 
 When you **copy a course** in Moodle, the system does NOT physically duplicate all files on disk. Instead, it creates **database references** to the same files. This is by design for efficiency.
-
-### Notes regarding course size calculation
-
-1. When copying Course 1 → Course 2, files are NOT duplicated on disk
-2. Moodle creates new database entries (`{files}` table) pointing to the same physical files
-3. When you delete content from Course 2, only the database records are removed
-4. The physical files remain on disk (they may still be referenced by Course 1)
-5. Storage Guard correctly reports the usage based on database records, not physical files
+When you delete content from copied course only the database records are removed ( as physical files are still used by other course)
+- Storage Guard correctly reports the usage based on database records, not physical files
 
 ### Recycle bin and course size calculations
-When item is deleted from course and the recycle bin is active, the deleted file keeps appearing in course size 
-until recycle bin cleanup task run
+- Include Recycle Bin(off) default:
+Items in recycle bin are not counted in course qouta.
 
+- Include Recycle Bin(off) default:
+Items recycle bin are counted in course qouta and must be deleted from recycle bin or deactivate recycle bin.
+
+Note:in Moodle, the deleted file doesn't move the recyle bin until recycle bin cleanup scheduled task run.
 
 ## Installing via uploaded ZIP file ##
 
@@ -52,17 +51,5 @@ Alternatively, you can run
 to complete the installation from the command line.
 
 ## License ##
-
 2026 Wafaa Mansour <eng.wafaa.hamdy@gmail.com>
-
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <https://www.gnu.org/licenses/>.
+under the terms of the GNU General Public License. see <https://www.gnu.org/licenses/>.

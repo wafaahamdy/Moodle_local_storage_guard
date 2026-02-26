@@ -28,30 +28,34 @@ require_once(__DIR__ . '/../../config.php');
 require_login();
 require_capability('moodle/site:config', context_system::instance());
 
-$filter_category = optional_param('category', 0, PARAM_INT);
-$filter_lock     = optional_param('lockstatus', -1, PARAM_INT);
-$export_csv      = optional_param('exportcsv', false, PARAM_BOOL);
+$filtercategory = optional_param('category', 0, PARAM_INT);
+$filterlock     = optional_param('lockstatus', -1, PARAM_INT);
+$exportcsv      = optional_param('exportcsv', false, PARAM_BOOL);
 
 // 1. DATA FETCHING
 $params = [];
 $where = [];
-if ($filter_category > 0) { $where[] = "c.category = :category"; $params['category'] = $filter_category; }
-if ($filter_lock !== -1) { $where[] = "lsg.is_locked = :islocked"; $params['islocked'] = $filter_lock; }
-$where_sql = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
+if ($filtercategory > 0) {
+    $where[] = "c.category = :category"; $params['category'] = $filtercategory;
+}
+if ($filterlock !== -1) {
+    $where[] = "lsg.is_locked = :islocked"; $params['islocked'] = $filterlock;
+}
+$wheresql = !empty($where) ? ' WHERE ' . implode(' AND ', $where) : '';
 
 $sql = "SELECT lsg.*, c.fullname, cc.name as categoryname, d.value as custom_quota
-          FROM {local_storage_guard} lsg
-          JOIN {course} c ON c.id = lsg.courseid
-          JOIN {course_categories} cc ON cc.id = c.category
-     LEFT JOIN {customfield_field} f ON f.shortname = 'custom_quota_mb'
-     LEFT JOIN {customfield_data} d ON (d.instanceid = c.id AND d.fieldid = f.id)
-          $where_sql
-      ORDER BY lsg.last_notified DESC";
+FROM {local_storage_guard} lsg
+JOIN {course} c ON c.id = lsg.courseid
+JOIN {course_categories} cc ON cc.id = c.category
+LEFT JOIN {customfield_field} f ON f.shortname = 'custom_quota_mb'
+LEFT JOIN {customfield_data} d ON (d.instanceid = c.id AND d.fieldid = f.id)
+$wheresql
+ORDER BY lsg.last_notified DESC";
 
 $records = $DB->get_records_sql($sql, $params) ?: []; // Fixes count() Error by ensuring it's an array.
 
 // 2. CSV EXPORT (Must be called before ANY output/header)
-if ($export_csv && confirm_sesskey()) {
+if ($exportcsv && confirm_sesskey()) {
     $filename = 'storage_report_' . date('Ymd') . '.csv';
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="'.$filename.'"');
@@ -83,12 +87,14 @@ if (optional_param('forcescan', false, PARAM_BOOL) && confirm_sesskey()) {
 
 // 5. PREPARE DATA FOR TEMPLATE
 $categories = $DB->get_records_menu('course_categories', null, 'name ASC', 'id, name');
-$total_locked = 0;
-$courses_data = [];
+$totallocked = 0;
+$coursesdata = [];
 
 foreach ($records as $record) {
-    if ($record->is_locked) $total_locked++;
-    $courses_data[] = [
+    if ($record->is_locked) {
+        $totallocked++;
+    }
+    $coursesdata[] = [
         'url' => (new moodle_url('/course/edit.php', ['id' => $record->courseid]))->out(),
         'name' => format_string($record->fullname),
         'categoryname' => format_string($record->categoryname),
@@ -101,13 +107,13 @@ foreach ($records as $record) {
 
 $renderdata = [
     'total_courses' => count($records),
-    'total_locked' => $total_locked,
+    'total_locked' => $totallocked,
     'scanurl' => new moodle_url('/local/storage_guard/dashboard.php', ['forcescan' => 1, 'sesskey' => sesskey()]),
     'exporturl' => new moodle_url($PAGE->url, ['exportcsv' => 1, 'sesskey' => sesskey()]),
     'formurl' => new moodle_url('/local/storage_guard/dashboard.php'),
-    'categoryselect' => html_writer::select(['0' => 'All Categories'] + $categories, 'category', $filter_category, false, ['class' => 'form-control mr-2']),
-    'statusselect' => html_writer::select(['-1' => 'All', '0' => 'Active', '1' => 'Locked'], 'lockstatus', $filter_lock, false, ['class' => 'form-control mr-2']),
-    'courses' => $courses_data
+    'categoryselect' => html_writer::select(['0' => 'All Categories'] + $categories, 'category', $filtercategory, false, ['class' => 'form-control mr-2']),
+    'statusselect' => html_writer::select(['-1' => 'All', '0' => 'Active', '1' => 'Locked'], 'lockstatus', $filterlock, false, ['class' => 'form-control mr-2']),
+    'courses' => $coursesdata
 ];
 
 // 6. RENDER TEMPLATE

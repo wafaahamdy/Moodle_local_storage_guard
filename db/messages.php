@@ -16,7 +16,6 @@
 
 /**
  * This file tells Moodle that our plugin is a "Producer" of messages
- * 
  * @package     local_storage_guard
  * @copyright   2026 Wafaa Mansour <eng.wafaa.hamdy@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,11 +26,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $messageproviders = [
     'quota_warning' => [
-        'capability' => 'local/storage_guard:receive_notifications', // Updated here
+        'capability' => 'local/storage_guard:receive_notifications',
         'defaults' => [
             'popup' => MESSAGE_DEFAULT_ENABLED,
-            'email' => MESSAGE_DISALLOWED,
-            //MESSAGE_DEFAULT_DISABLED,   /// change to MESSAGE_DEFAULT_ENABLED,   to activate sending message by mail
+            'email' => MESSAGE_DEFAULT_ENABLED, //MESSAGE_DISALLOWED.
         ],
     ],
 ];

@@ -24,16 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-
-
 $tasks = [
     [
         'classname' => 'local_storage_guard\task\quota_enforcement_task',
         'blocking' => 0,
-        'minute' => '*/30', // Run every 30 minutes
+        'minute' => '*/30',
         'hour' => '*',
         'day' => '*',
         'month' => '*',
-        'dayofweek' => '*'
-    ]
+        'dayofweek' => '*',
+    ],
 ];

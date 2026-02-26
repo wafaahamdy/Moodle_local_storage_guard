@@ -16,7 +16,6 @@
 
 /**
  * Plugin version and other meta-data are defined here.
- *
  * @package     local_storage_guard
  * @copyright   2026 Wafaa Mansour <eng.wafaa.hamdy@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -43,5 +42,4 @@ $capabilities = [
         ],
         'clonepermissionsfrom' => 'moodle/site:config',
     ],
-    
 ];

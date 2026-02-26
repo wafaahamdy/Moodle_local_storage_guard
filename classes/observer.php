@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+namespace local_storage_guard;
+
+use moodle_url;
+use core\notification;
 /**
  * Event observers for Storage Guard.
  *
@@ -21,15 +25,6 @@
  * @copyright   2026 Wafaa Mansour <eng.wafaa.hamdy@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-
-namespace local_storage_guard;
-
-defined('MOODLE_INTERNAL') || die();
-
-use moodle_url;
-use core\notification;
-
 class observer {
 
     /**
@@ -48,29 +43,24 @@ class observer {
 
         // 2. Verify the Lock Status in our custom table.
         $state = $DB->get_record('local_storage_guard', ['courseid' => $courseid]);
-        
         // If the course isn't locked in our plugin, we don't interfere.
         if (!$state || $state->is_locked == 0) {
-            return; 
+            return;
         }
 
         // 3. Check what the 'maxbytes' value is AFTER the teacher tried to save it.
-        $actual_current_limit = (int)$DB->get_field('course', 'maxbytes', ['id' => $courseid]);
-        $lock_size = 1048576; // 1MB
+        $actualcurrentlimit = (int)$DB->get_field('course', 'maxbytes', ['id' => $courseid]);
+        $locksize = 1048576; // 1MB
 
         // 4. If it is NOT 1MB, the teacher tried to change it.
-        if ($actual_current_limit !== $lock_size) {
-            
+        if ($actualcurrentlimit !== $locksize) {
             // Force it back to 1MB in the database immediately.
-            $DB->set_field('course', 'maxbytes', $lock_size, ['id' => $courseid]);
-            
+            $DB->set_field('course', 'maxbytes', $locksize, ['id' => $courseid]);
             // Clear the course cache so the UI reflects the 1MB limit immediately.
             \cache_helper::purge_by_event('changesincourse');
-
             // Queue the "Popup" error message.
             notification::error(get_string('error_maxbytes_locked', 'local_storage_guard'));
-
-            // Redirect back to the edit page. This stops the "Changes Saved" message 
+            // Redirect back to the edit page. This stops the "Changes Saved" message
             // from appearing and shows our error instead.
             $url = new moodle_url('/course/edit.php', ['id' => $courseid]);
             redirect($url);

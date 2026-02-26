@@ -26,8 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_storage_guard';
 $plugin->release = '0.1.0';
-$plugin->version = 2026012707;
-$plugin->requires = 2025012400.00; // Moodle 5.0 
+$plugin->version = 2026022202;
+$plugin->requires = 2025012400.00; // Moodle 5.0.
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->release   = 'v1.0.0';
 

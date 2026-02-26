@@ -24,8 +24,6 @@
 
 namespace local_storage_guard;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class quota_manager
  * * Manages retrieval of effective quotas and current course usage.
@@ -39,17 +37,16 @@ class quota_manager {
      */
     public function get_effective_quota($courseid) {
         // 1. Check for a Course-level override in custom fields.
-        $course_override = $this->get_course_custom_field_value($courseid, 'custom_quota_mb');
+        $courseoverride = $this->get_course_custom_field_value($courseid, 'custom_quota_mb');
 
-        if (!empty($course_override) && is_numeric($course_override) && (int)$course_override > 0) {
-            return (int)$course_override;
+        if (!empty($courseoverride) && is_numeric($courseoverride) && (int)$courseoverride > 0) {
+            return (int)$courseoverride;
         }
 
         // 2. Fallback to Site Default (max_mbytes) set in plugin settings.
-        $site_default = get_config('local_storage_guard', 'max_mbytes');
-        
+        $sitedefault = get_config('local_storage_guard', 'max_mbytes');
         // Returns site default, or 1000MB (1GB) as a last resort if nothing is configured.
-        return ($site_default !== false && $site_default !== '') ? (int)$site_default : 1000;
+        return ($sitedefault !== false && $sitedefault !== '') ? (int)$sitedefault : 1000;
     }
 
     /**
@@ -58,15 +55,14 @@ class quota_manager {
      * @return int Quota in Bytes.
      */
     public function get_effective_quota_bytes($courseid) {
-        $quota_mb = $this->get_effective_quota($courseid);
-        
+        $quotamb = $this->get_effective_quota($courseid);
         // Convert MB to Bytes (1 MB = 1024 * 1024 bytes).
-        return $quota_mb * 1048576;
+        return $quotamb * 1048576;
     }
 
     /**
      * Retrieves the current total file usage of a course in Megabytes (MB).
-     * * This function leverages the 'report_coursesize' plugin library to ensure 
+     * * This function leverages the 'report_coursesize' plugin library to ensure
      * consistency with the system's Course Size report.
      *
      * @param int $courseid The ID of the course to measure.
@@ -75,24 +71,28 @@ class quota_manager {
     public function get_course_usage_mb($courseid) {
         global $CFG, $DB;
 
-        //   Manual calculation if report_coursesize is missing.
+        // Manual calculation if report_coursesize is missing.
         $context = \context_course::instance($courseid);
+        $includerecycle = get_config('local_storage_guard', 'include_recycle_bin');
+
         $sql = "SELECT SUM(f.filesize)
           FROM {files} f
           JOIN {context} ctx ON f.contextid = ctx.id
           WHERE (ctx.id = :contextid OR ctx.path LIKE :path)
           AND f.filename != '.' -- Ignore directory markers
           AND f.component != 'user'  -- Ignore student/teacher personal private files
-          AND f.component != 'tool_recyclebin'  -- Ignore items sitting in the Recycle Bin
-          AND f.filearea  != 'recyclebin'
           AND f.filearea  != 'trashcan' -- Ignore the 4-day safety trash area
-          AND f.filearea  != 'draft'"; // Ignore files currently being uploaded (Drafts)
-         
+          AND f.filearea  != 'draft'"; // Ignore files currently being uploaded (Drafts).
+
+          // If the setting is OFF (0), we exclude the recycle bin areas.
+        if (!$includerecycle) {
+            $sql .= " AND f.component != 'tool_recyclebin'
+                  AND f.filearea  != 'recyclebin'";
+        }
         $bytes = $DB->get_field_sql($sql, [
             'contextid' => $context->id,
-            'path'      => $context->path . '/%'
+            'path'      => $context->path . '/%',
         ]);
-        
         return round(($bytes ?: 0) / 1048576, 2);
     }
 

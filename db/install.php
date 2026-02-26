@@ -23,41 +23,42 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * This function is automatically called by Moodle after the plugin is installed.
+ * It creates a custom field category and a number field for course quota overrides.
+ */
 function xmldb_local_storage_guard_install() {
     global $DB;
 
-    $field_configs = [
+    $fieldconfigs = [
         ['area' => 'course', 'shortname' => 'custom_quota_mb', 'name' => 'Course Quota Override (MB)'],
-       
     ];
 
-    foreach ($field_configs as $cfg) {
+    foreach ($fieldconfigs as $cfg) {
         $handler = \core_customfield\handler::get_handler('core_course', $cfg['area']);
-        if (!$handler) continue;
+        if (!$handler) {
+            continue;
+        }
 
-        $category_name = 'Storage Guard Settings';
-        $category_rec = $DB->get_record('customfield_category', [
-            'component' => 'core_course', 
-            'area'      => $cfg['area'], 
-            'name'      => $category_name
+        $categoryname = 'Storage Guard Settings';
+        $categoryrec = $DB->get_record('customfield_category', [
+            'component' => 'core_course',
+            'area'      => $cfg['area'],
+            'name'      => $categoryname,
         ]);
-        
-        if (!$category_rec) {
-            $new_cat = $handler->create_category($category_name);
-            // Fix for "get() on int" error:
-            $category_id = is_object($new_cat) ? $new_cat->get('id') : $new_cat;
+        if (!$categoryrec) {
+            $newcat = $handler->create_category($categoryname);
+            // Fix for "get() on int" error.
+            $categoryid = is_object($newcat) ? $newcat->get('id') : $newcat;
         } else {
-            $category_id = $category_rec->id;
+            $categoryid = $categoryrec->id;
         }
 
         // Fix for "timecreated" error: Added timestamps and required fields.
-        if (!$DB->record_exists('customfield_field', ['shortname' => $cfg['shortname'], 'categoryid' => $category_id])) {
+        if (!$DB->record_exists('customfield_field', ['shortname' => $cfg['shortname'], 'categoryid' => $categoryid])) {
             $now = time();
-            $field_data = (object)[
-                'categoryid'   => $category_id,
+            $fielddata = (object)[
+                'categoryid'   => $categoryid,
                 'type'         => 'number',
                 'shortname'    => $cfg['shortname'],
                 'name'         => $cfg['name'],
@@ -65,14 +66,14 @@ function xmldb_local_storage_guard_install() {
                 'descriptionformat' => FORMAT_HTML,
                 'sortorder'    => 0,
                 'configdata'   => json_encode([
-                    'visibility' => 2, 
+                    'visibility' => 2,
                     'display' => 1,
-                    'locked'     => 1, // Field is locked for non-admins
+                    'locked'     => 1, // Field is locked for non-admins.
                     ]),
                 'timecreated'  => $now,
-                'timemodified' => $now
+                'timemodified' => $now,
             ];
-            $DB->insert_record('customfield_field', $field_data);
+            $DB->insert_record('customfield_field', $fielddata);
         }
     }
 }
