@@ -50,5 +50,5 @@ Alternatively, you can run
 to complete the installation from the command line.
 
 ## License ##
-2026 Wafaa Mansour <eng.wafaa.hamdy@gmail.com>
+2026 Wafaa Hamdy <eng.wafaa.hamdy@gmail.com>
 under the terms of the GNU General Public License. see <https://www.gnu.org/licenses/>.
