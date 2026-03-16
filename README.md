@@ -6,7 +6,7 @@ Storage Guard is a Moodle plugin that manages course storage quotas and enforces
 
 - **Course-level quota management**: Set storage limits per course or use site-wide defaults
 - **Configurable Recycle Bin Logic**: toggle whether items in the Recycle Bin count toward the course quota.
-- **Automatic quota enforcement**: Locks courses to 1MB upload limit when quota is exceeded
+- **Automatic quota enforcement**: Locks courses to 1MB upload limit when quota is exceeded , unlocks the course and set Max upload to site default Max. upload when course storage returns back under course quota
 - **Warning notifications**: Alerts teachers when storage usage reaches 80% of quota
 - **Restriction notifications**: Alerts when storage is restricted due to quota exceeded
 - **Custom field integration**: Course-level quota overrides via custom fields
@@ -25,6 +25,7 @@ Items in recycle bin are not counted in course qouta.
 Items recycle bin are counted in course qouta and must be deleted from recycle bin or deactivate recycle bin.
 
 Note:in Moodle, the deleted file doesn't move the recyle bin until recycle bin cleanup scheduled task run.
+
 
 ## Installing via uploaded ZIP file ##
 
